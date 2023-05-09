@@ -25,7 +25,7 @@ public:
         registers["x5"] = 0;
         registers["x6"] = 0;
         registers["x7"] = 0;
-        registers["x8"] = 0;     //fp too, dk if we use that tho
+        registers["x8"] = 0;
         registers["x9"] = 0;
         registers["x10"] = 0;
         registers["x11"] = 0;
@@ -86,6 +86,52 @@ public:
         register_name["t4"] = "x29";
         register_name["t5"] = "x30";
         register_name["t6"] = "x31";
+
+        //now i will initialize all the instructions and their formats
+        instruction_struct["add"] = 'r';
+        instruction_struct["sub"] = 'r';
+        instruction_struct["sll"] = 'r';
+        instruction_struct["slt"] = 'r';
+        instruction_struct["sltu"] = 'r';
+        instruction_struct["xor"] = 'r';
+        instruction_struct["srl"] = 'r';
+        instruction_struct["sra"] = 'r';
+        instruction_struct["or"] = 'r';
+        instruction_struct["and"] = 'r';
+
+        instruction_struct["sb"] = 's';
+        instruction_struct["sh"] = 's';
+        instruction_struct["sw"] = 's';
+
+        instruction_struct["auipc"] = 'u';
+        instruction_struct["lui"] = 'u';
+
+        instruction_struct["jal"] = 'j';
+
+        instruction_struct["beq"] = 'b';
+        instruction_struct["bne"] = 'b';
+        instruction_struct["blt"] = 'b';
+        instruction_struct["bge"] = 'b';
+        instruction_struct["bltu"] = 'b';
+        instruction_struct["bgeu"] = 'b';
+
+        instruction_struct["jalr"] = 'i';
+        instruction_struct["lb"] = 'i';
+        instruction_struct["lh"] = 'i';
+        instruction_struct["lw"] = 'i';
+        instruction_struct["lbu"] = 'i';
+        instruction_struct["lhu"] = 'i';
+        instruction_struct["addi"] = 'i';
+        instruction_struct["slti"] = 'i';
+        instruction_struct["sltiu"] = 'i';
+        instruction_struct["xori"] = 'i';
+        instruction_struct["ori"] = 'i';
+        instruction_struct["andi"] = 'i';
+        instruction_struct["slli"] = 'i';
+        instruction_struct["srli"] = 'i';
+        instruction_struct["srai"] = 'i';
+
+
     }
 
 
@@ -112,14 +158,14 @@ public:
             line = data_preset[i];
             string word = "", address, value;
             for(int x = 0; x < line.size(); x++){
-                if(line[x] == ':'){                                       //keep reading unti;
+                if(line[x] == ':'){                                              //keep reading unti;
                     address = word;
                     word = "";
                 }else{
                     word += line[x];
                 }
             }
-            value = word;                                                    //after we are done, the value should be all that's left in the word
+            value = word;                                                      //after we are done, the value should be all that's left in the word
 
             memory[stoi(address)] = stoi(value);
         }
@@ -127,22 +173,121 @@ public:
             cout << "address: " << x.first << ", value: " << x.second << endl;
         }
     }
-    void preset(string text_data, string text_program){                     //in preset we will initialize the registers and memory and read pc, then read the program
-        ifstream program;
-        readFile(program, text_data, data_preset);
+    void preset(string text_data, string text_program){                         //in preset we will initialize the registers and memory and read pc, then read the program
+        ifstream read_program, read_data;
+        readFile(read_data, text_data, data_preset);
         programCounter = stoi(data_preset[0]);
         cout << "PC: " << programCounter << endl;
         save_in_memory();
+        readFile(read_program, text_program, program);
+       // for(auto x : program) cout << x << endl;                              //just checking if program is read.
     };
 
+    void r_functions(string line, string instruction){
+
+        stringstream isstring;
+        string instruct = "",reg1, reg2, rd;
+        isstring.clear();
+        isstring.str(line);
+        isstring >> instruct;
+        isstring >> rd;
+        rd.pop_back();                              //removing the ',' at the end
+        isstring >> reg1;
+        reg1.pop_back();                            //removing the ',' at the end
+        isstring >> reg2;
+
+        string r1, r2, rdst;
+        if(!registers.count(reg1)||!registers.count(reg2)||!registers.count(rd)) {
+            //if you find the register in the array, count function returns 1, else 0
+            if( !registers.count((register_name[reg1])) ||                    //checking if reg1 exists
+                !registers.count((register_name[reg2])) ||                    //checking if reg2 exists
+                !registers.count(register_name[rd]))  {                       //checking if rd exists
+                cout << "unknown reg" << endl;
+                return;
+            }   else{
+
+                if(!registers.count(reg1)) r1 = register_name[reg1];
+                else r1 = reg1;
+                if(!registers.count(reg2)) r2 = register_name[reg2];
+                else r2 = reg2;
+                if(!registers.count(rd)) rdst = register_name[rd];
+                else rdst = rd;
+
+            }
+        }
+        //by the end, if any of the regsiters enetered are missing, we should know
+        if (rd != "x0" && rd != "zero") {
+
+            if (instruction == "add") {
+                registers[rdst] = registers[r1] + registers[r2];
+            }else if(instruction == "sub") registers[rdst] = registers[r1] - registers[r2];
+            else if(instruction == "sll") registers[rdst] = registers[r1] << registers[r2];
+            else if(instruction == "srl") registers[rdst] = registers[r1] >> registers[r2];
+            else if(instruction == "and") registers[rdst] = registers[r1] && registers[r2];
+            else if(instruction == "or") registers[rdst] = registers[r1] || registers[r2];
+            else if(instruction == "xor") registers[rdst] = registers[r1] ^ registers[r2];
+            else if(instruction == "sltu") registers[rdst] = (registers[r1] < abs(registers[r2]))?1:0;
+            else if(instruction == "slt") registers[rdst] = (registers[r1] < registers[r2])?1:0;
+//            else if(instruction == "sra") registers[rdst] = registers[r1] << registers[r2];
+
+
+        }
+    };
+    void execute(){
+        for(auto line : program){
+            stringstream isstring;
+            string instruct = "";
+            isstring.clear();
+            isstring.str(line);
+            isstring >> instruct;                                                   //just the first word of each line, which will either be an instruction or a label, or a comment
+
+            if(instruct[0] != '#' && instruct[0] != '.'){                               //check that it's not a comment or a .text for example
+                if(instruct == "ecall" || instruct == "fence" || instruct == "ebreak") return;
+
+            char index = instruction_struct[instruct];
+
+            switch(index){
+                case 'i':
+                    cout << "instruction found" << endl;
+
+                    break;
+                case 'r':
+                    cout << "instruction found" << endl;
+                    r_functions(line, instruct);
+                    break;
+                case 'u':
+                    cout << "instruction found" << endl;
+
+                    break;
+                case 's':
+                    cout << "instruction found" << endl;
+
+                    break;
+                case 'b':
+                    cout << "instruction found" << endl;
+
+                    break;
+                case 'j':
+                    cout << "instruction found" << endl;
+
+                    break;
+                default:
+                    cout << "instruction not recognized" << endl;
+                    break;
+                }
+            }
+        }
+    };
 private:
     int programCounter;
-    unordered_map<int, int> memory;                               // Memory contents, using an unordered map, the first parameter is the address 'n second is the content
-    unordered_map<string, int> registers;                               // Register contents
-    unordered_map<string, string> register_name;
+    unordered_map<int, int> memory;                                              // Memory contents, using an unordered map, the first parameter is the address 'n second is the content
+    unordered_map<string, int> registers;                                        // Register contents
+    unordered_map<string, string> register_name;                                 // an array just in case we have a register used as its name not the normal x1,2,3,.. etc
+    unordered_map<string, char> instruction_struct;
 
     vector<string> data_preset;
     vector<string> program;
+
 
 };
 
@@ -150,6 +295,7 @@ private:
 int main() {
     RiscVSimulator sim;
     sim.preset( "C:\\Users\\DELL\\Desktop\\RARS_simulator\\simulator\\txt_files\\data.txt", "C:\\Users\\DELL\\Desktop\\RARS_simulator\\simulator\\txt_files\\program.txt");
+    sim.execute();
     return 0;
 }
 
