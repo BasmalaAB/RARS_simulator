@@ -407,6 +407,48 @@ int register_exits(string reg){               //this function makes sure that th
 
     }
 
+    void u_instructions(string line)
+    {
+        //LUI – Load Upper Immediate
+        //– AUIPC – Add Upper Immediate to PC
+
+        string rd, instruct, imm, val;
+        break_down_instruction_forU(rd, instruct, imm, val, line);
+
+        if (instruct == "lui")
+        {
+            //lui rd, value
+            registers[rd] = imm << 12;            //puts the upper 20 bits into the rd 
+                                                 //supposed to add the 20 bits in the upper half of the register??
+        }
+        if (instruct == "auipc")
+        {
+            int va = stoi(val);
+            //auipc rd, offset
+            registers[rd] = programCounter + va;  //saves address of programcounter in rd 
+        }
+    }
+
+    void break_down_instruction_forU(string& rd, string& instruct, int& imm, int& val, string line) {
+        stringstream word;
+        word.clear();
+        word.str(line);
+        word >> instruct;
+        if (!instruction_struct.count(instruct)) word >> instruct;   //if the first word is a label, move to the next word, hence instruction
+        word >> rd;
+        if (instruct == "lui")
+        {
+            word >> imm;
+            imm.pop_back();
+        }
+        if (instruct == "auipc")
+        {
+            word >> val;
+            val.pop_back();
+        }
+        rd.pop_back();
+    };
+
     void break_down_instruction_forRni(string& rd, string& r1, string& r2, string& instruct, string line){
         stringstream word;
         word.clear();
