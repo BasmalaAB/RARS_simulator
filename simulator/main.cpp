@@ -405,6 +405,7 @@ int register_exits(string reg){               //this function makes sure that th
         if(instruct == "sltu") registers[rd] = (abs(registers[r1]) < abs(registers[r2])) ? 1 : 0;
         //if(instruct == "sra") registers[rd] = registers[r1] >> registers[r2];
 
+
     }
 
     void u_instructions(string line)
@@ -418,12 +419,21 @@ int register_exits(string reg){               //this function makes sure that th
         if (instruct == "lui")
         {
             //lui rd, value
-            registers[rd] = stoi(imm) << 12;            //puts the upper 20 bits into the rd 
-                                                 //supposed to add the 20 bits in the upper half of the register??
+            registers[rd] = 0;
+            int cleared_val = stoi(imm) << 12;            //puts the upper 20 bits into the rd 
+            string incomplete = to_string(cleared_val);  //supposed to add the 20 bits in the upper half of the register??
+            for (int i = 0; i < 12; i++)
+            {
+                incomplete += '0';       //extended using 0's on the right     
+            }
+
+            registers[rd] += stoi(incomplete);
+            //make register 0, then extend imm with 12 bits using 0's and add onto register
         }
+
         if (instruct == "auipc")
         {
-            int va = stoi(val);
+            int va = stoi(val) << 12;
             //auipc rd, offset
             registers[rd] = programCounter + va;  //saves address of programcounter in rd 
         }
