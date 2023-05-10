@@ -330,6 +330,43 @@ int register_exits(string reg){               //this function makes sure that th
         else if(register_exits(rd) == 2) rd = register_name[rd];
 
         if(instruct == "addi") registers[rd] = registers[r1] + stoi(r2);
+        if (instruct == "slti") {
+            if (registers[r1] < stoi(r2))
+                registers[rd] = 1;
+            else
+                registers[rd] = 0;
+        }
+        if (instruct == "sltiu") {
+            if (abs(registers[r1]) < abs(stoi(r2)))
+                registers[rd] = 1;
+            else
+                registers[rd] = 0;
+        }
+        if (instruct == "xori")
+            registers[rd] = registers[r1] ^ stoi(r2);
+        if (instruct == "ori")
+            registers[rd] = registers[r1] || stoi(r2);
+        if (instruct == "andi")
+            registers[rd] = registers[r1] && stoi(r2);
+        if (instruct == "slli")
+            registers[rd] = registers[r1] << stoi(r2);
+        if (instruct == "srli")
+            registers[rd] = registers[r1] >> stoi(r2);
+        if (instruct == "srai")
+            registers[rd] = registers[r1] >> stoi(r2);
+        if (instruct == "lbu") {
+            registers[rd] = registers[r1] + stoi(r2);
+        }
+        if (instruct == "lh")
+            registers[rd] = registers[r1] + stoi(r2);
+        if (instruct == "lw")
+            registers[rd] = registers[r1] + stoi(r2);
+        if (instruct == "lbu")
+            registers[rd] = registers[r1] + stoi(r2);
+        if (instruct == "lhu")
+            registers[rd] = registers[r1] + stoi(r2);
+
+    
     };
 
     void r_instructions(string line)
