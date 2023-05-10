@@ -16,6 +16,7 @@ using namespace std;
 class RiscVSimulator {
 public:
     RiscVSimulator() {
+        error = 0;
         programCounter = 0;
         registers["x0"] = 0;
         registers["x1"] = 0;
@@ -181,58 +182,77 @@ public:
         save_in_memory();
         readFile(read_program, text_program, program);
        // for(auto x : program) cout << x << endl;                              //just checking if program is read.
+       int i = 0;
+       for(auto x : program){                                              //moves the program into a map where we can reach the lines passed on their address in the memory
+           programm[programCounter+(i*4)] = x;
+           i++;
+       }
+       for(auto x : programm){
+           string instruct = "";
+           stringstream line;
+           line.clear();
+           line.str(x.second);
+           line >> instruct;
+
+           if(!instruction_struct.count(instruct) && instruct.back() == ':') {
+               instruct.pop_back();
+               labels[instruct] = x.first;
+           }
+           else error = 1;
+       }
+       for(auto x : labels) cout << x.first << " " << x.second << endl;
     };
 
-    void r_functions(string line, string instruction){
+   // void r_functions(string line, string instruction){
 
-        stringstream isstring;
-        string instruct = "",reg1, reg2, rd;
-        isstring.clear();
-        isstring.str(line);
-        isstring >> instruct;
-        isstring >> rd;
-        rd.pop_back();                              //removing the ',' at the end
-        isstring >> reg1;
-        reg1.pop_back();                            //removing the ',' at the end
-        isstring >> reg2;
-
-        string r1, r2, rdst;
-        if(!registers.count(reg1)||!registers.count(reg2)||!registers.count(rd)) {
-            //if you find the register in the array, count function returns 1, else 0
-            if( !registers.count((register_name[reg1])) ||                    //checking if reg1 exists
-                !registers.count((register_name[reg2])) ||                    //checking if reg2 exists
-                !registers.count(register_name[rd]))  {                       //checking if rd exists
-                cout << "unknown reg" << endl;
-                return;
-            }   else{
-
-                if(!registers.count(reg1)) r1 = register_name[reg1];
-                else r1 = reg1;
-                if(!registers.count(reg2)) r2 = register_name[reg2];
-                else r2 = reg2;
-                if(!registers.count(rd)) rdst = register_name[rd];
-                else rdst = rd;
-
-            }
-        }
-        //by the end, if any of the regsiters enetered are missing, we should know
-        if (rd != "x0" && rd != "zero") {
-
-            if (instruction == "add") {
-                registers[rdst] = registers[r1] + registers[r2];
-            }else if(instruction == "sub") registers[rdst] = registers[r1] - registers[r2];
-            else if(instruction == "sll") registers[rdst] = registers[r1] << registers[r2];
-            else if(instruction == "srl") registers[rdst] = registers[r1] >> registers[r2];
-            else if(instruction == "and") registers[rdst] = registers[r1] && registers[r2];
-            else if(instruction == "or") registers[rdst] = registers[r1] || registers[r2];
-            else if(instruction == "xor") registers[rdst] = registers[r1] ^ registers[r2];
-            else if(instruction == "sltu") registers[rdst] = (registers[r1] < abs(registers[r2]))?1:0;
-            else if(instruction == "slt") registers[rdst] = (registers[r1] < registers[r2])?1:0;
+//        stringstream isstring;
+//        string instruct = "",reg1, reg2, rd;
+//        isstring.clear();
+//        isstring.str(line);
+//        isstring >> instruct;
+//        isstring >> rd;
+//        rd.pop_back();                              //removing the ',' at the end
+//        isstring >> reg1;
+//        reg1.pop_back();                            //removing the ',' at the end
+//        isstring >> reg2;
+//
+//        string r1, r2, rdst;
+//        if(!registers.count(reg1)||!registers.count(reg2)||!registers.count(rd)) {
+//            //if you find the register in the array, count function returns 1, else 0
+//            if( !registers.count((register_name[reg1])) ||                    //checking if reg1 exists
+//                !registers.count((register_name[reg2])) ||                    //checking if reg2 exists
+//                !registers.count(register_name[rd]))  {                       //checking if rd exists
+//                cout << "unknown reg" << endl;
+//                return;
+//            }   else{
+//
+//                if(!registers.count(reg1)) r1 = register_name[reg1];
+//                else r1 = reg1;
+//                if(!registers.count(reg2)) r2 = register_name[reg2];
+//                else r2 = reg2;
+//                if(!registers.count(rd)) rdst = register_name[rd];
+//                else rdst = rd;
+//
+//            }
+//        }
+//        //by the end, if any of the regsiters enetered are missing, we should know
+//        if (rd != "x0" && rd != "zero") {
+//
+//            if (instruction == "add") {
+//                registers[rdst] = registers[r1] + registers[r2];
+//            }else if(instruction == "sub") registers[rdst] = registers[r1] - registers[r2];
+//            else if(instruction == "sll") registers[rdst] = registers[r1] << registers[r2];
+//            else if(instruction == "srl") registers[rdst] = registers[r1] >> registers[r2];
+//            else if(instruction == "and") registers[rdst] = registers[r1] && registers[r2];
+//            else if(instruction == "or") registers[rdst] = registers[r1] || registers[r2];
+//            else if(instruction == "xor") registers[rdst] = registers[r1] ^ registers[r2];
+//            else if(instruction == "sltu") registers[rdst] = (registers[r1] < abs(registers[r2]))?1:0;
+//            else if(instruction == "slt") registers[rdst] = (registers[r1] < registers[r2])?1:0;
 //            else if(instruction == "sra") registers[rdst] = registers[r1] << registers[r2];
+//
 
-
-        }
-    };
+//        }
+//    };
     void execute(){
         for(auto line : program){
             stringstream isstring;
@@ -253,7 +273,7 @@ public:
                     break;
                 case 'r':
                     cout << "instruction found" << endl;
-                    r_functions(line, instruct);
+                 //   r_functions(line, instruct);
                     break;
                 case 'u':
                     cout << "instruction found" << endl;
@@ -288,6 +308,9 @@ private:
     vector<string> data_preset;
     vector<string> program;
 
+    unordered_map<int, string> programm;
+    unordered_map<string, int> labels;
+    int error;
 
 };
 
@@ -295,7 +318,7 @@ private:
 int main() {
     RiscVSimulator sim;
     sim.preset( "C:\\Users\\DELL\\Desktop\\RARS_simulator\\simulator\\txt_files\\data.txt", "C:\\Users\\DELL\\Desktop\\RARS_simulator\\simulator\\txt_files\\program.txt");
-    sim.execute();
+    //sim.execute();
     return 0;
 }
 
