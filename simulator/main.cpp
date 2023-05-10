@@ -354,20 +354,28 @@ int register_exits(string reg){               //this function makes sure that th
             registers[rd] = registers[r1] >> stoi(r2);
         if (instruct == "srai")
             registers[rd] = registers[r1] >> stoi(r2);
-        if (instruct == "lbu") {
-            registers[rd] = registers[r1] + stoi(r2);
-        }
+        if (instruct == "lbu") 
+            registers[rd] = memory[registers[r1] + stoi(r2)] & 0xFF;
         if (instruct == "lh")
-            registers[rd] = registers[r1] + stoi(r2);
+             registers[rd] = *((int16_t*) (memory + registers[r1] + stoi(r2))); 
         if (instruct == "lw")
-            registers[rd] = registers[r1] + stoi(r2);
-        if (instruct == "lbu")
-            registers[rd] = registers[r1] + stoi(r2);
+              registers[rd] = *((int32_t*) (memory + registers[r1] + stoi(r2)));
         if (instruct == "lhu")
-            registers[rd] = registers[r1] + stoi(r2);
+            registers[rd] = *((uint16_t*) (memory + registers[r1] + stoi(r2))); 
+
+           
 
     
     };
+    void s_instructions(string line){
+     if (instruct == "sw")
+              *((int32_t*) (memory + registers[r1] + stoi(r2)))= registers[rd] ;
+     if (instruct == "shw") {
+           *((uint16_t) (memory + registers[r1] + stoi(r2))) = registers[rd] & 0xFFFF;
+    
+    
+    
+    }
 
     void r_instructions(string line)
     {
@@ -395,7 +403,7 @@ int register_exits(string reg){               //this function makes sure that th
         if(instruct == "srl") registers[rd] = registers[r1] >> registers[r2];
         if(instruct == "slt") registers[rd] = (registers[r1] < registers[r2]) ? 1 : 0;
         if(instruct == "sltu") registers[rd] = (abs(registers[r1]) < abs(registers[r2])) ? 1 : 0;
-        //if(instruct == "sra") registers[rd] = registers[r1] + registers[r2];
+        //if(instruct == "sra") registers[rd] = registers[r1] >> registers[r2];
 
     }
 
