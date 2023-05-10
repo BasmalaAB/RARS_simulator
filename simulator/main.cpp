@@ -299,6 +299,21 @@ public:
 //        }
     //for(int pc = programCounter; pc <= programm.end();  )
     };
+
+    void r_functions(string line)
+    {
+        stringstream isstring;
+        string instruct = "";
+        isstring.clear();
+        isstring.str(line);
+        isstring >> instruct;
+        if (!instruction_struct.count(instruct))
+        {
+            isstring >> instruct;
+        }
+    }
+
+
 private:
     int programCounter;
     unordered_map<int, int> memory;                                              // Memory contents, using an unordered map, the first parameter is the address 'n second is the content
