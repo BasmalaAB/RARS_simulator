@@ -418,7 +418,7 @@ int register_exits(string reg){               //this function makes sure that th
         if (instruct == "lui")
         {
             //lui rd, value
-            registers[rd] = imm << 12;            //puts the upper 20 bits into the rd 
+            registers[rd] = stoi(imm) << 12;            //puts the upper 20 bits into the rd 
                                                  //supposed to add the 20 bits in the upper half of the register??
         }
         if (instruct == "auipc")
@@ -429,7 +429,7 @@ int register_exits(string reg){               //this function makes sure that th
         }
     }
 
-    void break_down_instruction_forU(string& rd, string& instruct, int& imm, int& val, string line) {
+    void break_down_instruction_forU(string& rd, string& instruct, string& imm, string& val, string line) {
         stringstream word;
         word.clear();
         word.str(line);
