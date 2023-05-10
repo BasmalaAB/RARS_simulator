@@ -254,49 +254,50 @@ public:
 //        }
 //    };
     void execute(){
-        for(auto line : program){
-            stringstream isstring;
-            string instruct = "";
-            isstring.clear();
-            isstring.str(line);
-            isstring >> instruct;                                                   //just the first word of each line, which will either be an instruction or a label, or a comment
-
-            if(instruct[0] != '#' && instruct[0] != '.'){                               //check that it's not a comment or a .text for example
-                if(instruct == "ecall" || instruct == "fence" || instruct == "ebreak") return;
-
-            char index = instruction_struct[instruct];
-
-            switch(index){
-                case 'i':
-                    cout << "instruction found" << endl;
-
-                    break;
-                case 'r':
-                    cout << "instruction found" << endl;
-                 //   r_functions(line, instruct);
-                    break;
-                case 'u':
-                    cout << "instruction found" << endl;
-
-                    break;
-                case 's':
-                    cout << "instruction found" << endl;
-
-                    break;
-                case 'b':
-                    cout << "instruction found" << endl;
-
-                    break;
-                case 'j':
-                    cout << "instruction found" << endl;
-
-                    break;
-                default:
-                    cout << "instruction not recognized" << endl;
-                    break;
-                }
-            }
-        }
+//        for(auto line : programm){
+//            stringstream isstring;
+//            string instruct = "";
+//            isstring.clear();
+//            isstring.str(line.second);
+//            isstring >> instruct;                                                   //just the first word of each line, which will either be an instruction or a label, or a comment
+//
+//            if(instruct[0] != '#' && instruct[0] != '.'){                               //check that it's not a comment or a .text for example
+//                if(instruct == "ecall" || instruct == "fence" || instruct == "ebreak") return;
+//
+//            char index = instruction_struct[instruct];
+//
+//            switch(index){
+//                case 'i':
+//                    cout << "instruction found" << endl;
+//
+//                    break;
+//                case 'r':
+//                    cout << "instruction found" << endl;
+//                 //   r_functions(line, instruct);
+//                    break;
+//                case 'u':
+//                    cout << "instruction found" << endl;
+//
+//                    break;
+//                case 's':
+//                    cout << "instruction found" << endl;
+//
+//                    break;
+//                case 'b':
+//                    cout << "instruction found" << endl;
+//
+//                    break;
+//                case 'j':
+//                    cout << "instruction found" << endl;
+//
+//                    break;
+//                default:
+//                    cout << "instruction not recognized" << endl;
+//                    break;
+//                }
+//            }
+//        }
+    //for(int pc = programCounter; pc <= programm.end();  )
     };
 private:
     int programCounter;
