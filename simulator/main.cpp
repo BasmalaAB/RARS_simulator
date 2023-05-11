@@ -367,7 +367,7 @@ int register_exits(string reg){               //this function makes sure that th
         word>>instruct;
         if(!instruction_struct.count(instruct)) word>>instruct;
         word>>rd;
-        line.find("(");
+       string pos= line.find("(");
         string  offset= line.substr(0, pos); 
        string r2 = line.substr(pos + 1, line.size() - pos - 2);
         
