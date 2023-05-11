@@ -328,7 +328,90 @@ int register_exits(string reg) {               //this function makes sure that t
         else if(register_exits(rd) == 2) rd = register_name[rd];
 
         if(instruct == "addi") registers[rd] = registers[r1] + stoi(r2);
+        if (instruct == "slti") {
+            if (registers[r1] < stoi(r2))
+                registers[rd] = 1;
+            else
+                registers[rd] = 0;
+        }
+        if (instruct == "sltiu") {
+            if (abs(registers[r1]) < abs(stoi(r2)))
+                registers[rd] = 1;
+            else
+                registers[rd] = 0;
+        }
+        if (instruct == "xori")
+            registers[rd] = registers[r1] ^ stoi(r2);
+        if (instruct == "ori")
+            registers[rd] = registers[r1] || stoi(r2);
+        if (instruct == "andi")
+            registers[rd] = registers[r1] && stoi(r2);
+        if (instruct == "slli")
+            registers[rd] = registers[r1] << stoi(r2);
+        if (instruct == "srli")
+            registers[rd] = registers[r1] >> stoi(r2);
+       // if (instruct == "srai")
+           // registers[rd] = registers[r1] >> stoi(r2);
+       
+
+           
+
+    
     };
+    void breakdownforls(string&rd, string&r1, string r2, string&instruct, string line, string offset){
+        stringstream word;
+        word.clear;
+        word.str(line);
+        word>>instruct;
+        if(!instruction_struct.count(instruct)) word>>instruct;
+        word>>rd;
+       string pos= line.find("(");
+        string  offset= line.substr(0, pos); 
+       string r2 = line.substr(pos + 1, line.size() - pos - 2);
+        
+    }//not sure
+     void load_instructions(string line){
+     string r1, r2, rd, instruct;
+      break_down_instruction_forRni(rd, r1, r2, instruct, line);
+         
+      if(register_exits(r1) == 1){ }
+      else if(register_exits(r1) == 0) {error = 1; return;
+     } else if(register_exits(r1) == 2) r1 = register_name[r1];
+
+        if(register_exits(rd) == 1){ } else
+        if(register_exits(rd) == 0) {error = 1; return;}
+        else if(register_exits(rd) == 2)
+            rd = register_name[rd];
+     if (instruct == "lbu") 
+            registers[rd] = memory[registers[r1] + stoi(r2)] && 0x0000000F;
+        if (instruct == "lh")
+             registers[rd] = *((int16_t*) (memory + registers[r1] + stoi(r2))); 
+        if (instruct == "lw")
+              registers[rd] = *((int32_t*) (memory + registers[r1] + stoi(r2)));
+        if (instruct == "lhu")
+            registers[rd] = *((uint16_t*) (memory + registers[r1] + stoi(r2))); 
+     
+     }
+    void s_instructions(string line){
+         string r1, r2, rd, instruct;
+        break_down_instruction_forRni(rd, r1, r2, instruct, line);
+
+        if(register_exits(r1) == 1){ }
+        else if(register_exits(r1) == 0) {error = 1; return;
+        } else if(register_exits(r1) == 2) r1 = register_name[r1];
+
+        if(register_exits(rd) == 1){ } else
+        if(register_exits(rd) == 0) {error = 1; return;}
+        else if(register_exits(rd) == 2)
+            rd = register_name[rd];
+     if (instruct == "sw")
+            memory [registers[rd] +stoi(r2)]=  *(int32_t*) registers[r1]  ;
+     if (instruct == "sh") {
+          memory [registers[rd] +stoi(r2)]=  *(int16_t*) registers[r1]
+        // sb
+    //add breakdown for store and load 
+    
+    }
 
     void r_instructions(string line)
     {
@@ -356,9 +439,61 @@ int register_exits(string reg) {               //this function makes sure that t
         if(instruct == "srl") registers[rd] = registers[r1] >> registers[r2];
         if(instruct == "slt") registers[rd] = (registers[r1] < registers[r2]) ? 1 : 0;
         if(instruct == "sltu") registers[rd] = (abs(registers[r1]) < abs(registers[r2])) ? 1 : 0;
-        //if(instruct == "sra") registers[rd] = registers[r1] + registers[r2];
+        //if(instruct == "sra") registers[rd] = registers[r1] >> registers[r2];
+
 
     }
+
+    void u_instructions(string line)
+    {
+        //LUI  Load Upper Immediate
+        // AUIPC  Add Upper Immediate to PC
+
+        string rd, instruct, imm, val;
+        break_down_instruction_forU(rd, instruct, imm, val, line);
+
+        if (instruct == "lui")
+        {
+            //lui rd, value
+            registers[rd] = 0;
+            int cleared_val = stoi(imm) << 12;            //puts the upper 20 bits into the rd 
+            string incomplete = to_string(cleared_val);  //supposed to add the 20 bits in the upper half of the register??
+            for (int i = 0; i < 12; i++)
+            {
+                incomplete += '0';       //extended using 0's on the right     
+            }
+
+            registers[rd] += stoi(incomplete);
+            //make register 0, then extend imm with 12 bits using 0's and add onto register
+        }
+
+        if (instruct == "auipc")
+        {
+            int va = stoi(val) << 12;
+            //auipc rd, offset
+            registers[rd] = programCounter + va;  //saves address of programcounter in rd 
+        }
+    }
+
+    void break_down_instruction_forU(string& rd, string& instruct, string& imm, string& val, string line) {
+        stringstream word;
+        word.clear();
+        word.str(line);
+        word >> instruct;
+        if (!instruction_struct.count(instruct)) word >> instruct;   //if the first word is a label, move to the next word, hence instruction
+        word >> rd;
+        if (instruct == "lui")
+        {
+            word >> imm;
+            imm.pop_back();
+        }
+        if (instruct == "auipc")
+        {
+            word >> val;
+            val.pop_back();
+        }
+        rd.pop_back();
+    };
 
     void break_down_instruction_forRni(string& rd, string& r1, string& r2, string& instruct, string line){
         stringstream word;
