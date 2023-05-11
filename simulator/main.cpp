@@ -212,8 +212,6 @@ public:
     };
 
 
-
-
 void break_down_instruction_forB(string& r1, string& r2, string& label, string& instruct, string line){
     stringstream word;
     word.clear();
@@ -224,6 +222,7 @@ void break_down_instruction_forB(string& r1, string& r2, string& label, string& 
     r2.pop_back();
     r1.pop_back();
 };
+
     int b_instructions( string line, string label){
         string r1, r2, instruct;
         break_down_instruction_forB(r1, r2, label, instruct, line);
@@ -257,17 +256,12 @@ void break_down_instruction_forB(string& r1, string& r2, string& label, string& 
 
 
 
-int register_exits(string reg){               //this function makes sure that the given register exists
-    int decider;
-    if(registers.count(reg)) decider = 1;
-    else if(register_name.count(reg)) decider = 2;
-    else decider = 0;
-
-//    if(decider = 0) return false;
-//    else if(decider = 2) reg = register_name[reg];
-//    return true;
+int register_exits(string reg) {               //this function makes sure that the given register exists
+    if (registers.count(reg)) return 1;
+    else if (register_name.count(reg)) return 2;
+    else return 0;
 };
-//map<int, string>& pc,
+
 
     void execute(){
 
@@ -314,6 +308,10 @@ int register_exits(string reg){               //this function makes sure that th
             }else cout << "instruction not recognized" << endl;
 
         }
+//        if(error == 1) {
+//            cout << "MET ERROR, TERMINATE" << endl;
+//            return;
+//        }
     }
     };
 
