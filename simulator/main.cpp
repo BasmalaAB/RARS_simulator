@@ -18,7 +18,6 @@ using namespace std;
 class RiscVSimulator {
 public:
     RiscVSimulator() {
-        error = 0;
         programCounter = 0;
         registers["x0"] = 0;
         registers["x1"] = 0;
@@ -190,29 +189,25 @@ public:
         save_in_memory();
         readFile(read_program, text_program, program);
        // for(auto x : program) cout << x << endl;                              //just checking if program is read.
-       int i = 0;
-       for(auto x : program){                                              //moves the program into a map where we can reach the lines passed on their address in the memory
-           programm[programCounter+(i*4)] = x;
+        int i = 0;
+        for(auto x : program){                                              //moves the program into a map where we can reach the lines passed on their address in the memory
+            programm[programCounter+(i*4)] = x;
            i++;
-       }
-       programEnd = programCounter+((i-1)*4);
-       //cout << "prog end " << programEnd << endl;
-       for(auto x : programm){
-           string instruct = "";
+        }
+        programEnd = programCounter+((i-1)*4);
+        for(auto x : programm){
+            string instruct = "";
            stringstream line;
            line.clear();
            line.str(x.second);
            line >> instruct;
 
-           if(!instruction_struct.count(instruct) && instruct.back() == ':') {
+            if(!instruction_struct.count(instruct) && instruct.back() == ':') {
                instruct.pop_back();
                labels[instruct] = x.first;
-           }
-           else error = 1;
+            }
        }
-       //for(auto x : programm) cout << x.first << " " << x.second << endl;
     };
-
 
 void break_down_instruction_forB(string& r1, string& r2, string& label, string& instruct, string line){
     stringstream word;
@@ -225,7 +220,7 @@ void break_down_instruction_forB(string& r1, string& r2, string& label, string& 
     r1.pop_back();
 };
 
-    int b_instructions( string line, string& label){
+    int b_instructions( string line, string& label, int& error){
         string r1, r2, instruct;
         break_down_instruction_forB(r1, r2, label, instruct, line);
 
@@ -260,9 +255,9 @@ void break_down_instruction_forB(string& r1, string& r2, string& label, string& 
         else return 0;
     };
 
-    void i_instructions(string line){
-        string r1, r2, rd, instruct;
-        break_down_instruction_forRni(rd, r1, r2, instruct, line);
+    void i_instructions(string line, int& error){
+        string r1, imm, rd, instruct;
+        break_down_instruction_forRni(rd, r1, imm, instruct, line);
 
         if(register_exits(r1) == 1){ }
         else if(register_exits(r1) == 0) {error = 1; return;
@@ -273,16 +268,15 @@ void break_down_instruction_forB(string& r1, string& r2, string& label, string& 
         else if(register_exits(rd) == 2) rd = register_name[rd];
 
 
-        if(instruct == "addi") registers[rd] = registers[r1] + stoi(r2);
-        else if (instruct == "slti") registers[rd] = (registers[r1] < stoi(r2)) ? 1 : 0;
-        else if (instruct == "sltiu") registers[rd] = (abs(registers[r1]) < abs(stoi(r2)))?1:0;
-        else if (instruct == "xori") registers[rd] = registers[r1] ^ stoi(r2);
-        else if (instruct == "ori") registers[rd] = registers[r1] || stoi(r2);
-        else if (instruct == "andi") registers[rd] = registers[r1] && stoi(r2);
-        else if (instruct == "slli") registers[rd] = registers[r1] << stoi(r2);
-        else if (instruct == "srli") registers[rd] = registers[r1] >> stoi(r2);
-        // if (instruct == "srai")
-        // registers[rd] = registers[r1] >> stoi(r2);
+        if(instruct == "addi") registers[rd] = registers[r1] + stoi(imm);
+        else if (instruct == "slti") registers[rd] = (registers[r1] < stoi(imm)) ? 1 : 0;
+        else if (instruct == "sltiu") registers[rd] = (abs(registers[r1]) < abs(stoi(imm)))?1:0;
+        else if (instruct == "xori") registers[rd] = registers[r1] ^ stoi(imm);
+        else if (instruct == "ori") registers[rd] = registers[r1] || stoi(imm);
+        else if (instruct == "andi") registers[rd] = registers[r1] && stoi(imm);
+        else if (instruct == "slli") registers[rd] = registers[r1] << stoi(imm);
+        else if (instruct == "srli") registers[rd] = registers[r1] >> stoi(imm);
+        else if(instruct == "srai") registers[rd] = sra(registers[r1], stoi(imm));
 
     };
 
@@ -307,7 +301,7 @@ void break_down_instruction_forB(string& r1, string& r2, string& label, string& 
         rd.pop_back();
     };
 
-    void i0_instructions(string line){
+    void i0_instructions(string line, int& error){
         string r1, offset, rd, instruct;
         break_down_instruction_S(rd, r1, offset, instruct, line);
 
@@ -324,10 +318,11 @@ void break_down_instruction_forB(string& r1, string& r2, string& label, string& 
         else if (instruct == "lb") registers[r1] = (memory[registers[rd] + stoi(offset)] & 0b00000000000000000000000011111111);
         else if (instruct == "lhu") registers[r1] = (uint32_t) (memory[registers[rd] + stoi(offset)] & 0b00000000000000001111111111111111);
         else if (instruct == "lbu") registers[r1] = (uint32_t) (memory[registers[rd] + stoi(offset)] & 0b00000000000000000000000011111111);
+        else if (instruct == "jalr") registers[r1] = (uint32_t) (memory[registers[rd] + stoi(offset)] & 0b00000000000000000000000011111111);
 
     };
 
-    void s_instructions(string line){
+    void s_instructions(string line, int& error){
         string r1, offset, rd, instruct;
         break_down_instruction_S(rd, r1, offset, instruct, line);
 
@@ -345,7 +340,7 @@ void break_down_instruction_forB(string& r1, string& r2, string& label, string& 
 
     };
 
-    void r_instructions(string line){
+    void r_instructions(string line, int& error){
         string r1, r2, rd, instruct;
         break_down_instruction_forRni(rd, r1, r2, instruct, line);
 
@@ -389,36 +384,20 @@ void break_down_instruction_forB(string& r1, string& r2, string& label, string& 
     }
 
 
-    void u_instructions(string line, int pc)
+    void u_instructions(string line, int pc, int& error)
     {
         //LUI  Load Upper Immediate, loads the imm value into the upper 20 bits of a number, leaving the rest 12 as zeros
         // AUIPC  Add Upper Immediate to PC
-
         string rd, instruct, imm;
         break_down_instruction_forU(rd, instruct, imm, line);
-        
+        if(register_exits(rd) == 1){ }
+        else if(register_exits(rd) == 0) {error = 1; return;
+        } else if(register_exits(rd) == 2) rd = register_name[rd];
 
-//        if (instruct == "lui")
-//        {
-//            //lui rd, value
-//            registers[rd] = 0;
-//            int cleared_val = stoi(imm) << 12;            //puts the upper 20 bits into the rd
-//            string incomplete = to_string(cleared_val);  //supposed to add the 20 bits in the upper half of the register??
-//            for (int i = 0; i < 12; i++)
-//            {
-//                incomplete += '0';       //extended using 0's on the right
-//            }
-//
-//            registers[rd] += stoi(incomplete);
-//            //make register 0, then extend imm with 12 bits using 0's and add onto register
-//        }
-//
-//        if (instruct == "auipc")
-//        {
-//            int va = stoi(val) << 12;
-//            //auipc rd, offset
-//            registers[rd] = programCounter + va;  //saves address of programcounter in rd
-       // }
+        int immediate = stoi(imm) << 12;
+        if(instruct == "lui") registers[rd] = immediate;
+        if(instruct == "auipc") registers[rd] = immediate + pc;
+
     };
 
     void break_down_instruction_forU(string& rd, string& instruct, string& imm, string line) {
@@ -432,17 +411,6 @@ void break_down_instruction_forB(string& r1, string& r2, string& label, string& 
         rd.pop_back();
         word >> imm;
 
-//        if (instruct == "lui")
-//        {
-//            word >> imm;
-//            imm.pop_back();
-//        }
-//        if (instruct == "auipc")
-//        {
-//            word >> val;
-//            val.pop_back();
-//        }
-//        rd.pop_back();
     };
 
     void break_down_instruction_forRni(string& rd, string& r1, string& r2, string& instruct, string line){
@@ -470,28 +438,28 @@ void break_down_instruction_forB(string& r1, string& r2, string& label, string& 
     };
 
     void execute(){
+        int error = 0;
         for(int pc = programCounter; pc <= programEnd; pc += 4){
 
             string line = programm[pc];
             stringstream word;
             word.clear();
             word.str(line);
-            string instruct; word >> instruct;                                             //instruct is the first word in a line
-            if(instruct[0] != '#' && instruct[0] != '.') {                                //check that it's not a comment or a .text for example
-                if(!instruction_struct.count(instruct)) word >> instruct;                   //if the first word is a label, move to the next word, hence instruction
-
+            string instruct; word >> instruct;                                                    //instruct is the first word in a line
+            if(instruct[0] != '#' && instruct[0] != '.') {                                        //check that it's not a comment or a .text for example
+                if(!instruction_struct.count(instruct)) word >> instruct;                      //if the first word is a label, move to the next word, hence instruction
                 if (instruct == "ecall" || instruct == "fence" || instruct == "ebreak") return;
 
                 char index = instruction_struct[instruct];
-                if(index == 'i') {i_instructions(line);         }
-                else if(index == 'r'){r_instructions(line);     }
-                else if(index == 'u'){u_instructions(line, pc);     }
-                else if(index == 's'){s_instructions(line);     }
-                else if(index == 'l'){i0_instructions(line);    }
+                if(index == 'i') {i_instructions(line, error);         }
+                else if(index == 'r'){r_instructions(line, error);     }
+                else if(index == 'u'){u_instructions(line, pc, error);     }
+                else if(index == 's'){s_instructions(line, error);     }
+                else if(index == 'l'){i0_instructions(line, error);    }
                 else if(index == 'b'){
                     string label;
-                    int res = b_instructions(line, label);
-                    if(res == 1) pc = labels[label] - 4;           //if b instrcution is true, return to label address
+                    int res = b_instructions(line, label, error);
+                    if(res == 1) pc = labels[label] - 4;                                             //if b instrcution is true, return to label address
                     else if(res == -1) {
                         cout << "ERROR!! UNKNOWN LABEL!!" << endl;
                         return;
@@ -510,6 +478,11 @@ void break_down_instruction_forB(string& r1, string& r2, string& label, string& 
                 }else cout << "instruction not recognized" << endl;
                 cout << "PC: " << pc << endl;
                 show();
+
+                if(error == 1) {
+                    cout << "MET ERROR, TERMINATE" << endl;
+                    return;
+                }
             }
         }
     };
@@ -528,7 +501,6 @@ private:
 
     map<int32_t, string> programm;
     unordered_map<string, int32_t> labels;
-    int error;
 
 };
 
@@ -540,5 +512,3 @@ int main() {
 
     return 0;
 }
-
-
