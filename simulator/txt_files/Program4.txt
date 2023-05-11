@@ -1,0 +1,8 @@
+start: addi s2, zero, 9
+addi s0, zero, 8
+add s3, s0, s2
+sub s3, s0, s2
+addi t1, zero, 5
+addi t2, zero, 10
+mul t0, t1, t2
+div t0, t1, t2
