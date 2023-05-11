@@ -334,7 +334,10 @@ void break_down_instruction_forB(string& r1, string& r2, string& label, string& 
         if(register_exits(rd) == 0) {error = 1; return;}
         else if(register_exits(rd) == 2) rd = register_name[rd];
 
+<<<<<<< HEAD
         if(registers[rd] +stoi(offset) > 1000){ error = 1; return;}
+=======
+>>>>>>> e0b92312fffe53a601f862d9b6c55ee1bcbf4560
      if (instruct == "sw") memory [registers[rd] +stoi(offset)]=  registers[r1]  ;
      else if (instruct == "sh") memory [registers[rd] +stoi(offset)]=  registers[r1] & 0b00000000000000001111111111111111;
      else if (instruct == "sb") memory [registers[rd] +stoi(offset)]=  registers[r1] & 0b00000000000000000000000011111111;
@@ -384,12 +387,17 @@ void break_down_instruction_forB(string& r1, string& r2, string& label, string& 
         return (sh | mask);  //uses bitwise or operation to apply the necessary sign extension (if needed)
     }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> e0b92312fffe53a601f862d9b6c55ee1bcbf4560
     void u_instructions(string line, int pc, int& error)
     {
         //LUI  Load Upper Immediate, loads the imm value into the upper 20 bits of a number, leaving the rest 12 as zeros
         // AUIPC  Add Upper Immediate to PC
         string rd, instruct, imm;
         break_down_instruction_forU(rd, instruct, imm, line);
+<<<<<<< HEAD
 
         if(register_exits(rd) == 1){ }
         else if(register_exits(rd) == 0) {error = 1; return;
@@ -399,6 +407,16 @@ void break_down_instruction_forB(string& r1, string& r2, string& label, string& 
         if(instruct == "lui") registers[rd] = immediate;
         if(instruct == "auipc") registers[rd] = immediate + pc;
 
+=======
+        if(register_exits(rd) == 1){ }
+        else if(register_exits(rd) == 0) {error = 1; return;
+        } else if(register_exits(rd) == 2) rd = register_name[rd];
+
+        int immediate = stoi(imm) << 12;
+        if(instruct == "lui") registers[rd] = immediate;
+        if(instruct == "auipc") registers[rd] = immediate + pc;
+
+>>>>>>> e0b92312fffe53a601f862d9b6c55ee1bcbf4560
     };
 
     void break_down_instruction_forU(string& rd, string& instruct, string& imm, string line) {
@@ -456,6 +474,7 @@ void break_down_instruction_forB(string& r1, string& r2, string& label, string& 
                 else if(index == 'r'){r_instructions(line, error);     }
                 else if(index == 'u'){u_instructions(line, pc, error);     }
                 else if(index == 's'){s_instructions(line, error);     }
+<<<<<<< HEAD
                 else if(index == 'l'){
                     if(instruct == "jalr"){
                         string r1, offset, rd, instruct;
@@ -473,6 +492,9 @@ void break_down_instruction_forB(string& r1, string& r2, string& label, string& 
                         pc = registers[rd] + stoi(offset);
                     }
                     else i0_instructions(line, error);    }
+=======
+                else if(index == 'l'){i0_instructions(line, error);    }
+>>>>>>> e0b92312fffe53a601f862d9b6c55ee1bcbf4560
                 else if(index == 'b'){
                     string label;
                     int res = b_instructions(line, label, error);
@@ -529,7 +551,3 @@ int main() {
 
     return 0;
 }
-
-
-
-
