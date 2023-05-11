@@ -10,6 +10,7 @@
 //#include <stdlib.h>
 //#include <string.h>
 //#include <cstdlib>
+#include <cstdint>
 #include <bits/stdc++.h>
 using namespace std;
 
@@ -439,10 +440,24 @@ int register_exits(string reg) {               //this function makes sure that t
         if(instruct == "srl") registers[rd] = registers[r1] >> registers[r2];
         if(instruct == "slt") registers[rd] = (registers[r1] < registers[r2]) ? 1 : 0;
         if(instruct == "sltu") registers[rd] = (abs(registers[r1]) < abs(registers[r2])) ? 1 : 0;
-        //if(instruct == "sra") registers[rd] = registers[r1] >> registers[r2];
+        if(instruct == "sra") registers[rd] = sra(registers[r1], registers[r2]); //uses function below, of sra
 
 
     }
+
+
+    int32_t sra(int32_t x, uint32_t bits) //takes 2 arguments, x- value we want to shift, and bits= num of bits to shift by 
+    {
+        int32_t sign = x >> 31;  //takes sign bit to check the number's sign (check if it's +ve or -ve)
+        int32_t sh = x >> bits;   //right shifts x by the number of bits provided
+        int32_t mask = -((sign << bits) != 0);   
+        //Explanation of line 3 of the function:
+        //If the sign bit shifted by shamt bits is non-zero,
+        //then the mask will be set to -1 (i.e., all bits set to 1), meaning the shift result should be sign-extended.
+        //Otherwise, the mask will be set to 0.
+        return (sh | mask);  //uses bitwise or operation to apply the necessary sign extension (if needed)
+    }
+
 
     void u_instructions(string line)
     {
