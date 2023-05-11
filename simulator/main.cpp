@@ -134,6 +134,11 @@ public:
         instruction_struct["srli"] = 'i';
         instruction_struct["srai"] = 'i';
 
+        instruction_struct["mul"] = 'r';
+        instruction_struct["div"] = 'r';
+//        instruction_struct["mv"] = 'o';
+//        instruction_struct["li"] = 'o';
+
         instruction_struct["fence"] = 'x';
         instruction_struct["ecall"] = 'x';
         instruction_struct["ebreak"] = 'x';
@@ -278,6 +283,8 @@ public:
         else if (instruct == "srli") registers[rd] = registers[r1] >> stoi(imm);
         else if(instruct == "srai") registers[rd] = sra(registers[r1], stoi(imm));
 
+        if(rd == "x0") registers[rd] = 0;
+
     };
 
     void break_down_instruction_S(string& rd, string& r1, string& offset, string& instruct, string line){
@@ -318,7 +325,8 @@ public:
         else if (instruct == "lb") registers[r1] = (memory[registers[rd] + stoi(offset)] & 0b00000000000000000000000011111111);
         else if (instruct == "lhu") registers[r1] = (uint32_t) (memory[registers[rd] + stoi(offset)] & 0b00000000000000001111111111111111);
         else if (instruct == "lbu") registers[r1] = (uint32_t) (memory[registers[rd] + stoi(offset)] & 0b00000000000000000000000011111111);
-        else if (instruct == "jalr") registers[r1] = (uint32_t) (memory[registers[rd] + stoi(offset)] & 0b00000000000000000000000011111111);
+
+        if(r1 == "x0") registers[r1] = 0;
 
     };
 
@@ -338,6 +346,7 @@ public:
         if (instruct == "sw") memory [registers[rd] +stoi(offset)]=  registers[r1]  ;
         else if (instruct == "sh") memory [registers[rd] +stoi(offset)]=  registers[r1] & 0b00000000000000001111111111111111;
         else if (instruct == "sb") memory [registers[rd] +stoi(offset)]=  registers[r1] & 0b00000000000000000000000011111111;
+
 
     };
 
@@ -359,6 +368,10 @@ public:
 
         if(instruct == "add") registers[rd] = registers[r1] + registers[r2];
         else if(instruct == "sub") registers[rd] = registers[r1] - registers[r2];
+
+        else if(instruct == "mul") registers[rd] = registers[r1] * registers[r2];
+        else if(instruct == "div") registers[rd] = registers[r1] / registers[r2];
+
         else if(instruct == "and") registers[rd] = registers[r1] && registers[r2];
         else if(instruct == "or") registers[rd] = registers[r1] || registers[r2];
         else if(instruct == "xor") registers[rd] = registers[r1] ^ registers[r2];
@@ -367,6 +380,8 @@ public:
         else if(instruct == "slt") registers[rd] = (registers[r1] < registers[r2]) ? 1 : 0;
         else if(instruct == "sltu") registers[rd] = (abs(registers[r1]) < abs(registers[r2])) ? 1 : 0;
         else if(instruct == "sra") registers[rd] = sra(registers[r1], registers[r2]);
+
+        if(rd == "x0") registers[rd] = 0;
 
     };
 
@@ -529,7 +544,3 @@ int main() {
 
     return 0;
 }
-
-
-
-
