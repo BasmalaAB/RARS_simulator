@@ -354,7 +354,37 @@ int register_exits(string reg){               //this function makes sure that th
             registers[rd] = registers[r1] >> stoi(r2);
        // if (instruct == "srai")
            // registers[rd] = registers[r1] >> stoi(r2);
-        if (instruct == "lbu") 
+       
+
+           
+
+    
+    };
+    void breakdownforls(string&rd, string&r1, string r2, string&instruct, string line, string offset){
+        stringstream word;
+        word.clear;
+        word.str(line);
+        word>>instruct;
+        if(!instruction_struct.count(instruct)) word>>instruct;
+        word>>rd;
+        line.find("(");
+        string  offset= line.substr(0, pos); 
+       string r2 = line.substr(pos + 1, line.size() - pos - 2);
+        
+    }//not sure
+     void load_instructions(string line){
+     string r1, r2, rd, instruct;
+      break_down_instruction_forRni(rd, r1, r2, instruct, line);
+         
+      if(register_exits(r1) == 1){ }
+      else if(register_exits(r1) == 0) {error = 1; return;
+     } else if(register_exits(r1) == 2) r1 = register_name[r1];
+
+        if(register_exits(rd) == 1){ } else
+        if(register_exits(rd) == 0) {error = 1; return;}
+        else if(register_exits(rd) == 2)
+            rd = register_name[rd];
+     if (instruct == "lbu") 
             registers[rd] = memory[registers[r1] + stoi(r2)] && 0x0000000F;
         if (instruct == "lh")
              registers[rd] = *((int16_t*) (memory + registers[r1] + stoi(r2))); 
@@ -362,11 +392,8 @@ int register_exits(string reg){               //this function makes sure that th
               registers[rd] = *((int32_t*) (memory + registers[r1] + stoi(r2)));
         if (instruct == "lhu")
             registers[rd] = *((uint16_t*) (memory + registers[r1] + stoi(r2))); 
-
-           
-
-    
-    };
+     
+     }
     void s_instructions(string line){
          string r1, r2, rd, instruct;
         break_down_instruction_forRni(rd, r1, r2, instruct, line);
