@@ -1,4 +1,9 @@
-addi x2, x0, 2
-addi x3, zero, 3
-sll x1, x3, x2
-ecall
+#addi x5, x0, 1
+#addi x7, x0, 934
+sw x5, 0(x7)
+#slli x2, x5, 2
+#addi x3, zero, 3
+#sll x1, x3, x2
+#bne x2, x3, exit
+#sub x1, x3, x2
+#exit: ecall
