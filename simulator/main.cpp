@@ -352,6 +352,7 @@ public:
 
     void r_instructions(string line, int& error){
         string r1, r2, rd, instruct;
+        rd = "";
         break_down_instruction_forRni(rd, r1, r2, instruct, line);
 
         if(register_exits(r1) == 1){ }
@@ -359,7 +360,7 @@ public:
         } else if(register_exits(r1) == 2) r1 = register_name[r1];
 
         if(register_exits(r2) == 1){ }
-        else if(register_exits(r2) == 0) {error = 1; return;
+       else  if(register_exits(r2) == 0) {error = 1; return;
         } else if(register_exits(r2) == 2) r2 = register_name[r2];
 
         if(register_exits(rd) == 1){ } else
@@ -486,6 +487,9 @@ public:
 
                         registers[r1] = pc + 4;
                         pc = registers[rd] + stoi(offset);
+
+                        if(r1 == "x0") registers[r1] = 0;
+
                     }
                     else i0_instructions(line, error);    }
                 else if(index == 'b'){
