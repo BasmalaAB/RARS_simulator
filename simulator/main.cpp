@@ -584,7 +584,7 @@ private:
 int main() {
     RiscVSimulator sim;
     //   sim.preset("C:\\Users\\DELL\\Desktop\\RARS_simulator\\simulator\\txt_files\\data.txt", "C:\\Users\\DELL\\Desktop\\RARS_simulator\\simulator\\txt_files\\program.txt");
-    sim.preset("C:\\Users\\DELL\\Desktop\\test_cases\\data.txt", "C:\\Users\\DELL\\Desktop\\test_cases\\D[A].txt");
+    sim.preset("C:\\Users\\DELL\\Desktop\\RARS_simulator\\simulator\\txt_files\\datafor_array.txt", "C:\\Users\\DELL\\Desktop\\RARS_simulator\\simulator\\txt_files\\multiplier.txt");
 
     sim.execute();
 

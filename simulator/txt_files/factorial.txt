@@ -1,0 +1,7 @@
+addi x10, x0, 6
+addi x11, x0, 1
+fact: mul x11, x11, x10
+addi x10, x10, -1
+beq x10, x0, exit
+jal fact
+exit: fence
