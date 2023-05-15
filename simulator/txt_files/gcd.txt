@@ -1,0 +1,14 @@
+lb x22, 0(x10)
+lb x23, 4(x10)
+auipc x24, 4
+addi x10, x0, 21
+addi x11, x0, 14
+gcd: slt t0, x10, x11
+beq t0, x0, sub
+sub x11, x11, x10
+jal check
+sub: sub x10, x10, x11
+check: beq x10, x0, first
+beq x11, x0, first
+jal gcd
+first: add x12, x10, x11

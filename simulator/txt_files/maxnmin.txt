@@ -1,0 +1,29 @@
+#loading the first element as the initial min x10 and max x11
+lw x10, 0(x22)
+lw x11, 0(x22)
+#i = 0
+addi x12, zero, 0
+#storing n
+addi x21, x0, 10
+Loop: slli t0, x12, 2
+#calculate offset, offset = i*4
+addi x12, x12, 1
+#i++
+beq x12, x21, EXIT
+#if(i==n-1),exit
+add t0, t0, x22
+#offset += base address so as not to have another var
+lw t1, 0(t0)
+#getting c[i]
+bge t1, x10, assign_max
+#if the current element is bigger than the min, move to the next if statement
+add x10, x0, t1
+#given that the current element is less than min, update min
+assign_max: blt t1, x11, Loop
+#if current element is less than max, go back
+add x11, x0, t1
+#given it’s bigger than max, update max
+beq x0, x0, Loop
+#loop
+EXIT: fence
+	

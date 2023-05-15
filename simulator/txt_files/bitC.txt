@@ -1,0 +1,8 @@
+addi x3, x0, 13
+loop: andi t0, x3, 1
+beq t0, x0, skip
+addi x2, x2, 1
+skip: srli x3, x3, 1
+beq x3, x0, end
+jal loop
+end: ecall

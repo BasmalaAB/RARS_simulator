@@ -1,0 +1,14 @@
+addi t0, x0, 0
+addi t1, x0, 1
+#s0 has the fib number we are looking for
+addi s0, x0, 0
+beq s0, x0, exit
+addi t3, x0, 1
+fib: add x12, t1, t0
+addi s0, s0, -1
+slt t5, s0, t3
+beq t5, t3, exit
+add t0, t1, zero
+add t1, x12, zero
+jal fib
+exit: fence

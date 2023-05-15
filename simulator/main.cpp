@@ -11,7 +11,8 @@
 //#include <string.h>
 //#include <cstdlib>
 #include <cstdint>
-#include <bits/stdc++.h>
+//#include <bits/stdc++.h>
+#include <unordered_map>
 using namespace std;
 
 
@@ -136,8 +137,8 @@ public:
 
         instruction_struct["mul"] = 'r';
         instruction_struct["div"] = 'r';
-//        instruction_struct["mv"] = 'o';
-//        instruction_struct["li"] = 'o';
+        //        instruction_struct["mv"] = 'o';
+        //        instruction_struct["li"] = 'o';
 
         instruction_struct["fence"] = 'x';
         instruction_struct["ecall"] = 'x';
@@ -147,33 +148,35 @@ public:
     }
 
 
-    void readFile(ifstream& file, string text, vector<string>& to_read){                 //a function to read from the text file, maybe will decide to have it return an array with every line
+    void readFile(ifstream& file, string text, vector<string>& to_read) {                 //a function to read from the text file, maybe will decide to have it return an array with every line
         file.open(text);
-        if(file.is_open()){                                                              //checking to see if I accessed the file or not to begin with
+        if (file.is_open()) {                                                              //checking to see if I accessed the file or not to begin with
             cout << "Successfully accessed program" << endl;
-        }else {
+        }
+        else {
             cout << "!error accessing file!" << endl;
             exit(-1);
         }
         cout << endl;
         string line;                                                                    //temp for each line
-        while(!file.eof()) {
+        while (!file.eof()) {
             getline(file, line);
             to_read.push_back(line);
         }
     };
 
-    void save_in_memory(){
+    void save_in_memory() {
 
         string line;
-        for(int i = 1; i < data_preset.size(); i++) {
+        for (int i = 1; i < data_preset.size(); i++) {
             line = data_preset[i];
             string word = "", address, value;
-            for(int x = 0; x < line.size(); x++){
-                if(line[x] == ':'){                                              //keep reading unti;
+            for (int x = 0; x < line.size(); x++) {
+                if (line[x] == ':') {                                              //keep reading unti;
                     address = word;
                     word = "";
-                }else{
+                }
+                else {
                     word += line[x];
                 }
             }
@@ -181,12 +184,12 @@ public:
 
             memory[stoi(address)] = stoi(value);
         }
-        for(auto x : memory){
+        for (auto x : memory) {
             cout << "address: " << x.first << ", value: " << x.second << endl;
         }
     }
 
-    void preset(string text_data, string text_program){                         //in preset we will initialize the registers and memory and read pc, then read the program
+    void preset(string text_data, string text_program) {                         //in preset we will initialize the registers and memory and read pc, then read the program
         ifstream read_program, read_data;
         readFile(read_data, text_data, data_preset);
         programCounter = stoi(data_preset[0]);
@@ -195,62 +198,72 @@ public:
         readFile(read_program, text_program, program);
         // for(auto x : program) cout << x << endl;                              //just checking if program is read.
         int i = 0;
-        for(auto x : program){                                              //moves the program into a map where we can reach the lines passed on their address in the memory
-            programm[programCounter+(i*4)] = x;
+        for (auto x : program) {                                              //moves the program into a map where we can reach the lines passed on their address in the memory
+            programm[programCounter + (i * 4)] = x;
             i++;
         }
-        programEnd = programCounter+((i-1)*4);
-        for(auto x : programm){
+        programEnd = programCounter + ((i - 1) * 4);
+        for (auto x : programm) {
             string instruct = "";
             stringstream line;
             line.clear();
             line.str(x.second);
             line >> instruct;
 
-            if(!instruction_struct.count(instruct) && instruct.back() == ':') {
+            if (!instruction_struct.count(instruct) && instruct.back() == ':') {
                 instruct.pop_back();
                 labels[instruct] = x.first;
             }
         }
     };
 
-    void break_down_instruction_forB(string& r1, string& r2, string& label, string& instruct, string line){
+    void break_down_instruction_forB(string& r1, string& r2, string& label, string& instruct, string line) {
         stringstream word;
         word.clear();
         word.str(line);
         word >> instruct;
-        if(!instruction_struct.count(instruct)) word >> instruct;   //if the first word is a label, move to the next word, hence instruction
+        if (!instruction_struct.count(instruct)) word >> instruct;   //if the first word is a label, move to the next word, hence instruction
         word >> r1; word >> r2; word >> label;
         r2.pop_back();
         r1.pop_back();
     };
 
-    int b_instructions( string line, string& label, int& error){
+    int b_instructions(string line, string& label, int& error) {
         string r1, r2, instruct;
         break_down_instruction_forB(r1, r2, label, instruct, line);
 
-        if(register_exits(r1) == 1){ }
-        else if(register_exits(r1) == 0) {return -1;
-        } else if(register_exits(r1) == 2) r1 = register_name[r1];
+        if (register_exits(r1) == 1) {}
+        else if (register_exits(r1) == 0) {
+            return -1;
+        }
+        else if (register_exits(r1) == 2) r1 = register_name[r1];
 
-        if(register_exits(r2) == 1){ }
-        else if(register_exits(r2) == 0) { return -1;
-        } else if(register_exits(r2) == 2) r2 = register_name[r2];
+        if (register_exits(r2) == 1) {}
+        else if (register_exits(r2) == 0) {
+            return -1;
+        }
+        else if (register_exits(r2) == 2) r2 = register_name[r2];
 
 
-        if(instruct == "beq"){
-            if(registers[r1] == registers[r2]) return 1;
-        }else if(instruct == "bne"){
-            if(registers[r1] != registers[r2]) return 1;
-        }else if(instruct == "blt"){
-            if(registers[r1] < registers[r2]) return 1;
-        }else if(instruct == "bge"){
-            if(registers[r1] >= registers[r2]) return 1;
-        }else if(instruct == "bltu"){
-            if(abs(registers[r1]) < abs(registers[r2])) return 1;
-        }else if(instruct == "bgeu"){
-            if(abs(registers[r1]) >= abs(registers[r2])) return 1;
-        }else return 0;
+        if (instruct == "beq") {
+            if (registers[r1] == registers[r2]) return 1;
+        }
+        else if (instruct == "bne") {
+            if (registers[r1] != registers[r2]) return 1;
+        }
+        else if (instruct == "blt") {
+            if (registers[r1] < registers[r2]) return 1;
+        }
+        else if (instruct == "bge") {
+            if (registers[r1] >= registers[r2]) return 1;
+        }
+        else if (instruct == "bltu") {
+            if (abs(registers[r1]) < abs(registers[r2])) return 1;
+        }
+        else if (instruct == "bgeu") {
+            if (abs(registers[r1]) >= abs(registers[r2])) return 1;
+        }
+        else return 0;
         return 0;
     };
 
@@ -260,129 +273,147 @@ public:
         else return 0;
     };
 
-    void i_instructions(string line, int& error){
+    void i_instructions(string line, int& error) {
         string r1, imm, rd, instruct;
         break_down_instruction_forRni(rd, r1, imm, instruct, line);
 
-        if(register_exits(r1) == 1){ }
-        else if(register_exits(r1) == 0) {error = 1; return;
-        } else if(register_exits(r1) == 2) r1 = register_name[r1];
+        if (register_exits(r1) == 1) {}
+        else if (register_exits(r1) == 0) {
+            error = 1; return;
+        }
+        else if (register_exits(r1) == 2) r1 = register_name[r1];
 
-        if(register_exits(rd) == 1){ } else
-        if(register_exits(rd) == 0) {error = 1; return;}
-        else if(register_exits(rd) == 2) rd = register_name[rd];
+        if (register_exits(rd) == 1) {}
+        else
+            if (register_exits(rd) == 0) { error = 1; return; }
+            else if (register_exits(rd) == 2) rd = register_name[rd];
 
 
-        if(instruct == "addi") registers[rd] = registers[r1] + stoi(imm);
+        if (instruct == "addi") registers[rd] = registers[r1] + stoi(imm);
         else if (instruct == "slti") registers[rd] = (registers[r1] < stoi(imm)) ? 1 : 0;
-        else if (instruct == "sltiu") registers[rd] = (abs(registers[r1]) < abs(stoi(imm)))?1:0;
+        else if (instruct == "sltiu") registers[rd] = (abs(registers[r1]) < abs(stoi(imm))) ? 1 : 0;
         else if (instruct == "xori") registers[rd] = registers[r1] ^ stoi(imm);
-        else if (instruct == "ori") registers[rd] = registers[r1] || stoi(imm);
-        else if (instruct == "andi") registers[rd] = registers[r1] && stoi(imm);
+        else if (instruct == "ori") registers[rd] = registers[r1] | stoi(imm);
+        else if (instruct == "andi") registers[rd] = registers[r1] & stoi(imm);
         else if (instruct == "slli") registers[rd] = registers[r1] << stoi(imm);
         else if (instruct == "srli") registers[rd] = registers[r1] >> stoi(imm);
-        else if(instruct == "srai") registers[rd] = sra(registers[r1], stoi(imm));
+        else if (instruct == "srai") registers[rd] = sra(registers[r1], stoi(imm));
 
-        if(rd == "x0") registers[rd] = 0;
+        if (rd == "x0") registers[rd] = 0;
 
     };
 
-    void break_down_instruction_S(string& rd, string& r1, string& offset, string& instruct, string line){
+    void break_down_instruction_S(string& rd, string& r1, string& offset, string& instruct, string line) {
         stringstream word;
         word.clear();
         word.str(line);
         word >> instruct;
-        if(!instruction_struct.count(instruct)) word >> instruct;   //if the first word is a label, move to the next word, hence instruction
+        if (!instruction_struct.count(instruct)) word >> instruct;   //if the first word is a label, move to the next word, hence instruction
         word >> r1; word >> rd;
         r1.pop_back();
 
         string offs = "", empty;
         empty = "";
-        for(auto x : rd) {
-            if(x == '('){
+        for (auto x : rd) {
+            if (x == '(') {
                 offset = empty;
                 empty = "";
-            }else empty += x;
+            }
+            else empty += x;
         }
         rd = empty;
         rd.pop_back();
     };
 
-    void i0_instructions(string line, int& error){
+    void i0_instructions(string line, int& error) {
         string r1, offset, rd, instruct;
         break_down_instruction_S(rd, r1, offset, instruct, line);
 
-        if(register_exits(r1) == 1){ }
-        else if(register_exits(r1) == 0) {error = 1; return;
-        } else if(register_exits(r1) == 2) r1 = register_name[r1];
+        if (register_exits(r1) == 1) {}
+        else if (register_exits(r1) == 0) {
+            error = 1; return;
+        }
+        else if (register_exits(r1) == 2) r1 = register_name[r1];
 
-        if(register_exits(rd) == 1){ } else
-        if(register_exits(rd) == 0) {error = 1; return;}
-        else if(register_exits(rd) == 2) rd = register_name[rd];
+        if (register_exits(rd) == 1) {}
+        else
+            if (register_exits(rd) == 0) { error = 1; return; }
+            else if (register_exits(rd) == 2) rd = register_name[rd];
 
         if (instruct == "lw") registers[r1] = memory[registers[rd] + stoi(offset)];
         else if (instruct == "lh") registers[r1] = (memory[registers[rd] + stoi(offset)] & 0b00000000000000001111111111111111);
         else if (instruct == "lb") registers[r1] = (memory[registers[rd] + stoi(offset)] & 0b00000000000000000000000011111111);
-        else if (instruct == "lhu") registers[r1] = (uint32_t) (memory[registers[rd] + stoi(offset)] & 0b00000000000000001111111111111111);
-        else if (instruct == "lbu") registers[r1] = (uint32_t) (memory[registers[rd] + stoi(offset)] & 0b00000000000000000000000011111111);
+        else if (instruct == "lhu") registers[r1] = (uint32_t)(memory[registers[rd] + stoi(offset)] & 0b00000000000000001111111111111111);
+        else if (instruct == "lbu") registers[r1] = (uint32_t)(memory[registers[rd] + stoi(offset)] & 0b00000000000000000000000011111111);
 
-        if(r1 == "x0") registers[r1] = 0;
+        if (r1 == "x0") registers[r1] = 0;
 
     };
 
-    void s_instructions(string line, int& error){
+    void s_instructions(string line, int& error) {
         string r1, offset, rd, instruct;
         break_down_instruction_S(rd, r1, offset, instruct, line);
 
-        if(register_exits(r1) == 1){ }
-        else if(register_exits(r1) == 0) {error = 1; return;
-        } else if(register_exits(r1) == 2) r1 = register_name[r1];
+        if (register_exits(r1) == 1) {}
+        else if (register_exits(r1) == 0) {
+            error = 1; return;
+        }
+        else if (register_exits(r1) == 2) r1 = register_name[r1];
 
-        if(register_exits(rd) == 1){ } else
-        if(register_exits(rd) == 0) {error = 1; return;}
-        else if(register_exits(rd) == 2) rd = register_name[rd];
+        if (register_exits(rd) == 1) {}
+        else
+            if (register_exits(rd) == 0) { error = 1; return; }
+            else if (register_exits(rd) == 2) rd = register_name[rd];
 
-        if(registers[rd] +stoi(offset) > 1000){ error = 1; return;}
-        if (instruct == "sw") memory [registers[rd] +stoi(offset)]=  registers[r1]  ;
-        else if (instruct == "sh") memory [registers[rd] +stoi(offset)]=  registers[r1] & 0b00000000000000001111111111111111;
-        else if (instruct == "sb") memory [registers[rd] +stoi(offset)]=  registers[r1] & 0b00000000000000000000000011111111;
+        if (registers[rd] + stoi(offset) > 1000) { error = 1; return; }
+        if (instruct == "sw") memory[registers[rd] + stoi(offset)] = registers[r1];
+        else if (instruct == "sh") memory[registers[rd] + stoi(offset)] = registers[r1] & 0b00000000000000001111111111111111;
+        else if (instruct == "sb") memory[registers[rd] + stoi(offset)] = registers[r1] & 0b00000000000000000000000011111111;
 
 
     };
 
-    void r_instructions(string line, int& error){
+    void r_instructions(string line, int& error) {
         string r1, r2, rd, instruct;
         rd = "";
         break_down_instruction_forRni(rd, r1, r2, instruct, line);
 
-        if(register_exits(r1) == 1){ }
-        else if(register_exits(r1) == 0) {error = 1; return;
-        } else if(register_exits(r1) == 2) r1 = register_name[r1];
+        if (register_exits(r1) == 1) {}
+        else if (register_exits(r1) == 0) {
+            error = 1; return;
+        }
+        else if (register_exits(r1) == 2) r1 = register_name[r1];
 
         if(register_exits(r2) == 1){ }
        else  if(register_exits(r2) == 0) {error = 1; return;
         } else if(register_exits(r2) == 2) r2 = register_name[r2];
+        if (register_exits(r2) == 1) {}
+        else if (register_exits(r2) == 0) {
+            error = 1; return;
+        }
+        else if (register_exits(r2) == 2) r2 = register_name[r2];
 
-        if(register_exits(rd) == 1){ } else
-        if(register_exits(rd) == 0) {error = 1; return;}
-        else if(register_exits(rd) == 2) rd = register_name[rd];
+        if (register_exits(rd) == 1) {}
+        else
+            if (register_exits(rd) == 0) { error = 1; return; }
+            else if (register_exits(rd) == 2) rd = register_name[rd];
 
-        if(instruct == "add") registers[rd] = registers[r1] + registers[r2];
-        else if(instruct == "sub") registers[rd] = registers[r1] - registers[r2];
+        if (instruct == "add") registers[rd] = registers[r1] + registers[r2];
+        else if (instruct == "sub") registers[rd] = registers[r1] - registers[r2];
 
-        else if(instruct == "mul") registers[rd] = registers[r1] * registers[r2];
-        else if(instruct == "div") registers[rd] = registers[r1] / registers[r2];
+        else if (instruct == "mul") registers[rd] = registers[r1] * registers[r2];
+        else if (instruct == "div") registers[rd] = registers[r1] / registers[r2];
 
-        else if(instruct == "and") registers[rd] = registers[r1] && registers[r2];
-        else if(instruct == "or") registers[rd] = registers[r1] || registers[r2];
-        else if(instruct == "xor") registers[rd] = registers[r1] ^ registers[r2];
-        else if(instruct == "sll") registers[rd] = registers[r1] << registers[r2];
-        else if(instruct == "srl") registers[rd] = registers[r1] >> registers[r2];
-        else if(instruct == "slt") registers[rd] = (registers[r1] < registers[r2]) ? 1 : 0;
-        else if(instruct == "sltu") registers[rd] = (abs(registers[r1]) < abs(registers[r2])) ? 1 : 0;
-        else if(instruct == "sra") registers[rd] = sra(registers[r1], registers[r2]);
+        else if (instruct == "and") registers[rd] = registers[r1] & registers[r2];
+        else if (instruct == "or") registers[rd] = registers[r1] | registers[r2];
+        else if (instruct == "xor") registers[rd] = registers[r1] ^ registers[r2];
+        else if (instruct == "sll") registers[rd] = registers[r1] << registers[r2];
+        else if (instruct == "srl") registers[rd] = registers[r1] >> registers[r2];
+        else if (instruct == "slt") registers[rd] = (registers[r1] < registers[r2]) ? 1 : 0;
+        else if (instruct == "sltu") registers[rd] = (abs(registers[r1]) < abs(registers[r2])) ? 1 : 0;
+        else if (instruct == "sra") registers[rd] = sra(registers[r1], registers[r2]);
 
-        if(rd == "x0") registers[rd] = 0;
+        if (rd == "x0") registers[rd] = 0;
 
     };
 
@@ -407,13 +438,15 @@ public:
         string rd, instruct, imm;
         break_down_instruction_forU(rd, instruct, imm, line);
 
-        if(register_exits(rd) == 1){ }
-        else if(register_exits(rd) == 0) {error = 1; return;
-        } else if(register_exits(rd) == 2) rd = register_name[rd];
+        if (register_exits(rd) == 1) {}
+        else if (register_exits(rd) == 0) {
+            error = 1; return;
+        }
+        else if (register_exits(rd) == 2) rd = register_name[rd];
 
         int immediate = stoi(imm) << 12;
-        if(instruct == "lui") registers[rd] = immediate;
-        if(instruct == "auipc") registers[rd] = immediate + pc;
+        if (instruct == "lui") registers[rd] = immediate;
+        if (instruct == "auipc") registers[rd] = immediate + pc;
 
     };
 
@@ -430,60 +463,63 @@ public:
 
     };
 
-    void break_down_instruction_forRni(string& rd, string& r1, string& r2, string& instruct, string line){
+    void break_down_instruction_forRni(string& rd, string& r1, string& r2, string& instruct, string line) {
         stringstream word;
         word.clear();
         word.str(line);
         word >> instruct;
-        if(!instruction_struct.count(instruct)) word >> instruct;   //if the first word is a label, move to the next word, hence instruction
+        if (!instruction_struct.count(instruct)) word >> instruct;   //if the first word is a label, move to the next word, hence instruction
         word >> rd; word >> r1; word >> r2;
         rd.pop_back();
         r1.pop_back();
     };
 
-    void show(){
+    void show() {
         cout << "REGISTERS: " << endl;
-        for(int i = 0; i < 32; i++){
+        for (int i = 0; i < 32; i++) {
             string reg = 'x' + to_string(i);
-            cout << reg << ": "  << registers[reg] << endl;
+            cout << reg << ": " << registers[reg] << endl;
         }cout << endl;
 
         cout << "MEMORY: " << endl;
-        for(auto x : memory){
+        for (auto x : memory) {
             cout << "address: " << x.first << ", value: " << x.second << endl;
         }   cout << endl;
     };
 
-    void execute(){
+    void execute() {
         int error = 0;
-        for(int pc = programCounter; pc <= programEnd; pc += 4){
+        for (int pc = programCounter; pc <= programEnd; pc += 4) {
 
             string line = programm[pc];
             stringstream word;
             word.clear();
             word.str(line);
             string instruct; word >> instruct;                                                    //instruct is the first word in a line
-            if(instruct[0] != '#' && instruct[0] != '.') {                                        //check that it's not a comment or a .text for example
-                if(!instruction_struct.count(instruct)) word >> instruct;                      //if the first word is a label, move to the next word, hence instruction
+            if (instruct[0] != '#' && instruct[0] != '.') {                                        //check that it's not a comment or a .text for example
+                if (!instruction_struct.count(instruct)) word >> instruct;                      //if the first word is a label, move to the next word, hence instruction
                 if (instruct == "ecall" || instruct == "fence" || instruct == "ebreak") return;
 
                 char index = instruction_struct[instruct];
-                if(index == 'i') {i_instructions(line, error);         }
-                else if(index == 'r'){r_instructions(line, error);     }
-                else if(index == 'u'){u_instructions(line, pc, error);     }
-                else if(index == 's'){s_instructions(line, error);     }
-                else if(index == 'l'){
-                    if(instruct == "jalr"){
+                if (index == 'i') { i_instructions(line, error); }
+                else if (index == 'r') { r_instructions(line, error); }
+                else if (index == 'u') { u_instructions(line, pc, error); }
+                else if (index == 's') { s_instructions(line, error); }
+                else if (index == 'l') {
+                    if (instruct == "jalr") {
                         string r1, offset, rd, instruct;
                         break_down_instruction_S(rd, r1, offset, instruct, line);
 
-                        if(register_exits(r1) == 1){ }
-                        else if(register_exits(r1) == 0) {error = 1; return;
-                        } else if(register_exits(r1) == 2) r1 = register_name[r1];
+                        if (register_exits(r1) == 1) {}
+                        else if (register_exits(r1) == 0) {
+                            error = 1; return;
+                        }
+                        else if (register_exits(r1) == 2) r1 = register_name[r1];
 
-                        if(register_exits(rd) == 1){ } else
-                        if(register_exits(rd) == 0) {error = 1; return;}
-                        else if(register_exits(rd) == 2) rd = register_name[rd];
+                        if (register_exits(rd) == 1) {}
+                        else
+                            if (register_exits(rd) == 0) { error = 1; return; }
+                            else if (register_exits(rd) == 2) rd = register_name[rd];
 
                         registers[r1] = pc + 4;
                         pc = registers[rd] + stoi(offset);
@@ -491,31 +527,35 @@ public:
                         if(r1 == "x0") registers[r1] = 0;
 
                     }
-                    else i0_instructions(line, error);    }
-                else if(index == 'b'){
+                    else i0_instructions(line, error);
+                }
+                else if (index == 'b') {
                     string label;
                     int res = b_instructions(line, label, error);
-                    if(res == 1) pc = labels[label] - 4;                                             //if b instrcution is true, return to label address
-                    else if(res == -1) {
+                    if (res == 1) pc = labels[label] - 4;                                             //if b instrcution is true, return to label address
+                    else if (res == -1) {
                         cout << "ERROR!! UNKNOWN LABEL!!" << endl;
                         return;
-                    }else { }}
-                else if(index == 'j'){
+                    }
+                    else {}
+                }
+                else if (index == 'j') {
                     string label;
 
                     word >> label;
                     registers["x1"] = pc + 4;           //save the return address
-                    if(!labels.count(label)){
+                    if (!labels.count(label)) {
                         cout << "ERROR!! UNKNOWN LABEL!!" << endl;
                         return;
                     }
                     else pc = labels[label] - 4;             //jump to the label
 
-                }else cout << "instruction not recognized" << endl;
+                }
+                else cout << "instruction not recognized" << endl;
                 cout << "PC: " << pc << endl;
                 show();
 
-                if(error == 1) {
+                if (error == 1) {
                     cout << "MET ERROR, TERMINATE" << endl;
                     return;
                 }
@@ -543,7 +583,9 @@ private:
 //uint32_t
 int main() {
     RiscVSimulator sim;
-    sim.preset( "C:\\Users\\DELL\\Desktop\\RARS_simulator\\simulator\\txt_files\\data.txt", "C:\\Users\\DELL\\Desktop\\RARS_simulator\\simulator\\txt_files\\program.txt");
+    //   sim.preset("C:\\Users\\DELL\\Desktop\\RARS_simulator\\simulator\\txt_files\\data.txt", "C:\\Users\\DELL\\Desktop\\RARS_simulator\\simulator\\txt_files\\program.txt");
+    sim.preset("C:\\Users\\DELL\\Desktop\\test_cases\\data.txt", "C:\\Users\\DELL\\Desktop\\test_cases\\D[A].txt");
+
     sim.execute();
 
     return 0;

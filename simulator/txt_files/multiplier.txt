@@ -1,0 +1,21 @@
+addi a0, x0, 6
+addi a1, x0, 8
+slt t3, x0, a0
+slt t4, x0, a1 
+bne t3, x0, neg_mlier
+sub a0, zero, a0
+neg_mlier: bne t4, x0, positive
+sub a1, zero, a1
+positive: addi a2, x0, 0
+multiply: andi t0, a1, 1
+addi t1, x0, 1
+bne  t0, t1, skip
+add a2, a2, a0
+skip: srli a1, a1, 1
+beq a1, x0, check_sign
+slli a0, a0, 1
+jal multiply
+check_sign: sw a2, 0(x0)
+beq t3, t4, exit
+sub a2, zero, a2
+exit: ecall       
